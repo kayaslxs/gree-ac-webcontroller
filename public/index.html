@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>AC Kontrol Paneli</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans p-6">
+
+  <h1 class="text-3xl font-bold text-center mb-6">🌬️ Klima Kontrol Paneli</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <!-- 1. Klimayı Aç / 2. Klimayı Kapat -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+      <h2 class="text-xl font-semibold mb-2">Güç</h2>
+      <div class="flex space-x-2">
+        <button class="bg-green-600 px-4 py-2 rounded hover:bg-green-500" onclick="setProperty('power','on')">🟢 Aç</button>
+        <button class="bg-red-600 px-4 py-2 rounded hover:bg-red-500" onclick="setProperty('power','off')">🔴 Kapat</button>
+      </div>
+    </div>
+
+    <!-- 3. Sıcaklık Ayarla -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🌡️ Sıcaklık</h2>
+      <div class="flex space-x-2 items-center">
+        <input id="temperature" type="number" class="w-20 p-2 rounded text-black" placeholder="°C">
+        <button class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500" onclick="setTemperature()">Ayarla</button>
+      </div>
+    </div>
+
+    <!-- 4. Mod Değiştir -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🔧 Mod</h2>
+      <select id="mode" class="w-full p-2 rounded text-black">
+        <option value="auto">Auto</option>
+        <option value="cool">Cool</option>
+        <option value="heat">Heat</option>
+        <option value="dry">Dry</option>
+        <option value="fan_only">Fan Only</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('mode')">Ayarla</button>
+    </div>
+
+    <!-- 5. Fan Hızı -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">💨 Fan Hızı</h2>
+      <select id="fanspeed" class="w-full p-2 rounded text-black">
+        <option value="auto">Auto</option>
+        <option value="low">Low</option>
+        <option value="mediumLow">Medium Low</option>
+        <option value="medium">Medium</option>
+        <option value="mediumHigh">Medium High</option>
+        <option value="high">High</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('fanspeed')">Ayarla</button>
+    </div>
+
+    <!-- 6. Swing Yatay -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">↔️ Swing Yatay</h2>
+      <select id="swingHor" class="w-full p-2 rounded text-black">
+        <option value="default">Default</option>
+        <option value="full">Full</option>
+        <option value="fixedLeft">Fixed Left</option>
+        <option value="fixedMidLeft">Fixed Mid Left</option>
+        <option value="fixedMid">Fixed Mid</option>
+        <option value="fixedMidRight">Fixed Mid Right</option>
+        <option value="fixedRight">Fixed Right</option>
+        <option value="fullAlt">Full Alt</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('swingHor')">Ayarla</button>
+    </div>
+
+    <!-- 7. Swing Dikey -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">↕️ Swing Dikey</h2>
+      <select id="swingVert" class="w-full p-2 rounded text-black">
+        <option value="default">Default</option>
+        <option value="full">Full</option>
+        <option value="fixedTop">Fixed Top</option>
+        <option value="fixedMidTop">Fixed Mid Top</option>
+        <option value="fixedMid">Fixed Mid</option>
+        <option value="fixedMidBottom">Fixed Mid Bottom</option>
+        <option value="fixedBottom">Fixed Bottom</option>
+        <option value="swingBottom">Swing Bottom</option>
+        <option value="swingMidBottom">Swing Mid Bottom</option>
+        <option value="swingMid">Swing Mid</option>
+        <option value="swingMidTop">Swing Mid Top</option>
+        <option value="swingTop">Swing Top</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('swingVert')">Ayarla</button>
+    </div>
+
+    <!-- 8. Air Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🌬️ Air Modu</h2>
+      <select id="air" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="inside">Inside</option>
+        <option value="outside">Outside</option>
+        <option value="mode3">Mode3</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('air')">Ayarla</button>
+    </div>
+
+    <!-- 9. Blow Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">💨 Blow Modu</h2>
+      <select id="blow" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('blow')">Ayarla</button>
+    </div>
+
+    <!-- 10. Health Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🏥 Health Modu</h2>
+      <select id="health" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('health')">Ayarla</button>
+    </div>
+
+    <!-- 11. Sleep Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">😴 Sleep Modu</h2>
+      <select id="sleep" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('sleep')">Ayarla</button>
+    </div>
+
+    <!-- 12. Işık Ayarı -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">💡 Işık Ayarı</h2>
+      <select id="lights" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('lights')">Ayarla</button>
+    </div>
+
+    <!-- 13. Quiet Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🔇 Quiet Modu</h2>
+      <select id="quiet" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="mode1">Mode1</option>
+        <option value="mode2">Mode2</option>
+        <option value="mode3">Mode3</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('quiet')">Ayarla</button>
+    </div>
+
+    <!-- 14. Turbo Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🚀 Turbo Modu</h2>
+      <select id="turbo" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('turbo')">Ayarla</button>
+    </div>
+
+    <!-- 15. PowerSave Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">💰 PowerSave Modu</h2>
+      <select id="powerSave" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('powerSave')">Ayarla</button>
+    </div>
+
+    <!-- 16. SafetyHeating Modu -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🔥 SafetyHeating Modu</h2>
+      <select id="safetyHeating" class="w-full p-2 rounded text-black">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('safetyHeating')">Ayarla</button>
+    </div>
+
+    <!-- 17. Sıcaklık Birimi -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">🌡️ Sıcaklık Birimi</h2>
+      <select id="temperatureUnit" class="w-full p-2 rounded text-black">
+        <option value="celsius">Celsius</option>
+        <option value="fahrenheit">Fahrenheit</option>
+      </select>
+      <button class="bg-blue-600 px-4 py-2 rounded mt-2 w-full hover:bg-blue-500" onclick="setPropertyFromSelect('temperatureUnit')">Ayarla</button>
+    </div>
+
+    <!-- 18. Detaylı Durum Göster -->
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+      <h2 class="text-xl font-semibold mb-2">📊 Durum</h2>
+      <button class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-500 w-full" onclick="showStatus()">Göster</button>
+    </div>
+
+  </div>
+
+  <!-- Durum Alanı -->
+  <div class="mt-6 bg-gray-700 p-4 rounded max-w-4xl mx-auto">
+    <pre id="status" class="whitespace-pre-wrap text-sm"></pre>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
