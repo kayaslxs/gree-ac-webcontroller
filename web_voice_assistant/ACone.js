@@ -2,7 +2,7 @@ const Gree = require("gree-hvac-client");
 const readline = require("readline");
 
 // AC Controll and connection
-const AC_IP = "192.168.1.100"; // Paste AC IP addr to here U can take AC addr visit to 192.168.1.1 and take it
+const AC_IP = "IP_ADDRESS"; // Paste AC IP addr to here U can take AC addr visit to 192.168.1.1 and take it
 
 const client = new Gree.Client({ host: AC_IP });
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -264,4 +264,5 @@ function showMenu() {
     }
     showMenu(); // Back to menu
   });
+
 }
